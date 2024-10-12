@@ -49,8 +49,9 @@
 
 2. Create a virtual environment and activate it:
     ```bash
-    python -m venv env
+    pipenv install
     source env/bin/activate   # On Windows use `env\Scripts\activate`
+    pipenv shell
     ```
 
 3. Install the backend dependencies:
