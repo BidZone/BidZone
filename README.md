@@ -1,4 +1,4 @@
-# BidZone
+# BidZone - THIS IS JUST A TEMPLATE README
 
 **BidZone** is a web application for hosting and participating in online auctions. This project enables users to create auctions, bid on items, and manage auction activities in a secure and efficient manner.
 
@@ -26,7 +26,7 @@
 
 - **Frontend**: React, Bootstrap
 - **Backend**: Django (Django REST Framework)
-- **Database**: PostgreSQL
+- **Database**: sqlLite3
 - **Authentication**: Django Allauth (or other authentication libraries)
 - **Notifications**: Websockets/REST API
 - **Deployment**: Docker (optional)
