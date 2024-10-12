@@ -26,7 +26,7 @@
 
 - **Frontend**: React, Bootstrap
 - **Backend**: Django (Django REST Framework)
-- **Database**: sqlite
+- **Database**: PostgreSQL
 - **Authentication**: Django Allauth (or other authentication libraries)
 - **Notifications**: Websockets/REST API
 - **Deployment**: Docker (optional)
@@ -37,6 +37,7 @@
 
 - Python 3.x
 - Node.js (with npm)
+- PostgreSQL
 
 ### Backend Setup
 
