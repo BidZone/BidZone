@@ -26,7 +26,7 @@
 
 - **Frontend**: React, Bootstrap
 - **Backend**: Django (Django REST Framework)
-- **Database**: sqlLite3
+- **Database**: sqlite
 - **Authentication**: Django Allauth (or other authentication libraries)
 - **Notifications**: Websockets/REST API
 - **Deployment**: Docker (optional)
@@ -37,13 +37,12 @@
 
 - Python 3.x
 - Node.js (with npm)
-- PostgreSQL
 
 ### Backend Setup
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/your-username/bidzone.git
+    git clone https://github.com/BidZone/BidZone.git
     cd bidzone
     ```
 
