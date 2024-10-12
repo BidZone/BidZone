@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://bidzoneapi.onrender.com']
+ALLOWED_HOSTS = ['bidzoneapi.onrender.com']
 
 
 # Application definition
