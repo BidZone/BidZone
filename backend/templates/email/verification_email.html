@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Potvrda Emaila</title>
+    </head>
+    <body>
+        <h2>Pozdrav {{ user.korisnicko_ime }}!</h2>
+        <p>Hvala što ste se registrirali na BidZone! Kliknite na link u nastavku da biste potvrdili svoj email i završili registraciju:</p>
+        <p>
+            <a href="{{ verification_link }}">Potvrdi Email</a>
+        </p>
+        <p>Ukoliko se niste Vi registrirali, možete zanemariti ovaj mail.</p>
+    </body>
+</html>

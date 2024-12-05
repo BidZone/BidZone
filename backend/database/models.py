@@ -8,6 +8,7 @@ class Korisnik(models.Model):
     oib = models.CharField(max_length=11, unique=True)
     adresa = models.TextField()
     balans = models.FloatField(default=0.0)
+    zamrznuti_balans = models.FloatField(default=0.0) 
     korisnicko_ime = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
     lozinka = models.CharField(max_length=255)
