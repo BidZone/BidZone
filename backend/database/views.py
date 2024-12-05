@@ -1,20 +1,28 @@
-from rest_framework import status, generics
-from rest_framework.response import Response
-from .serializers import KorisnikSerializer
+
+from .models import Korisnik
+from .serializers import KorisnikSerializer, LoginSerializer
+from .tokens import token_generator
+
+from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.core.mail import send_mail, EmailMultiAlternatives
-from django.urls import reverse
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.template.loader import render_to_string
-from .tokens import token_generator
-from .models import Korisnik
-from django.contrib.auth.tokens import default_token_generator
+from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.contrib import messages
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils import timezone
 
+from rest_framework import status, generics
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+import jwt
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = KorisnikSerializer
@@ -37,6 +45,64 @@ class RegisterView(generics.CreateAPIView):
                 }
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginView(APIView):
+    serializer_class = LoginSerializer
+    permission_classes = []
+
+    def post(self, request, *args, **kwargs):
+        identifier = request.data.get('identifier')
+        password = request.data.get('password')
+
+        if not identifier or not password:
+            return Response(
+                {"error": "Molimo unesite korisničko ime ili email i lozinku."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    
+        korisnik = Korisnik.objects.filter(
+            email=identifier
+        ).first() or Korisnik.objects.filter(
+            korisnicko_ime=identifier
+        ).first()
+
+        if not korisnik:
+            return Response(
+                {"error": "Korisnik s navedenim podatcima ne postoji."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
+        if not check_password(password, korisnik.lozinka):
+            return Response(
+                {"error": "Pogrešna lozinka"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        
+        if not korisnik.potvrden:
+            return Response(
+                {"error": "Korisnički račun nije potvrđen."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        
+        payload = {
+            'id_korisnika': korisnik.id_korisnika,
+            'ime': korisnik.ime,
+            'exp': timezone.now() + timedelta(days=1), # token traje 1 dan
+            'iat': timezone.now()
+        }
+
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+
+        return Response({
+            "message": "Prijava uspješna.",
+            "token": token,
+            "user": {
+                "id_korisnika": korisnik.id_korisnika,
+                "korisnicko_ime": korisnik.korisnicko_ime,
+                "email": korisnik.email,
+            }
+        }, status=status.HTTP_200_OK)
+        
 
 
 def send_verification_email(user, request):
