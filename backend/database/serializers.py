@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 from .models import Korisnik
 
 class KorisnikSerializer(serializers.ModelSerializer):
@@ -21,4 +21,29 @@ class KorisnikSerializer(serializers.ModelSerializer):
         korisnik.lozinka = make_password(password)
         korisnik.save()
         return korisnik
-    
+
+class LoginSerializer(serializers.Serializer):
+    identifier = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only = True)
+
+    class Meta:
+        model = Korisnik
+        fields = ['identifier', 'password']
+
+    def validate(self, attrs):
+        identifier = attrs.get('identifier')
+        password = attrs.get('password')
+
+        korisnik = Korisnik.objects.filter(email=identifier).first() or Korisnik.objects.filter(korisnicko_ime=identifier).first()
+
+        if not korisnik:
+            raise serializers.ValidationError({'identifier': "Korisnik s tim korisničkim imenom ili emailom ne postoji"})
+        
+        if not check_password(password, korisnik.lozinka):
+            raise serializers.ValidationError({'password': 'Pogrešna lozinka.'})
+        
+        if not korisnik.potvrden:
+            raise serializers.ValidationError({'identifier': 'Korisnik nije potvrdio svoj email.'})
+        
+        attrs['korisnik'] = korisnik
+        return attrs
