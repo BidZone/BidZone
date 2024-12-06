@@ -1,6 +1,6 @@
 
-from .models import Korisnik
-from .serializers import KorisnikSerializer, LoginSerializer
+from .models import Aukcija, Korisnik
+from .serializers import AukcijaSerializer, KorisnikSerializer, LoginSerializer
 from .tokens import token_generator
 
 from datetime import datetime, timedelta
@@ -18,7 +18,7 @@ from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils import timezone
 
-from rest_framework import status, generics
+from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -103,7 +103,19 @@ class LoginView(APIView):
             }
         }, status=status.HTTP_200_OK)
         
+class AukcijaCreateView(generics.CreateAPIView):
+    serializer_class = AukcijaSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def post(self, request, *args, **kwargs):
+        serializer = AukcijaSerializer(data=request.data)
+
+        if serializer.is_valid():
+            korisnik = request.user
+            serializer.save(kreirao=korisnik)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 def send_verification_email(user, request):
     # Generiraj token i uid

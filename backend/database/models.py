@@ -1,4 +1,5 @@
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 # Create your models here.
 class Korisnik(models.Model):
@@ -28,6 +29,8 @@ class Aukcija(models.Model):
     trajanje = models.DurationField()
     informacije = models.TextField()
     datum = models.DateTimeField(auto_now_add=True)
+    kreirao = models.ForeignKey('Korisnik', on_delete=models.CASCADE, null=True, blank=True)
+    slika = CloudinaryField('image', null=True, blank=True)
 
     def __str__(self):
         return self.naziv
@@ -41,11 +44,3 @@ class Ponuda(models.Model):
 
     def __str__(self):
         return f"Ponuda {self.id_ponude} - Iznos: {self.iznos}"
-
-class Slika(models.Model):
-    id_slike = models.AutoField(primary_key=True)
-    id_aukcije = models.ForeignKey('Aukcija', on_delete=models.CASCADE, related_name='slike')
-    link = models.URLField()
-
-    def __str__(self):
-        return f"Slika {self.id_slike} za aukciju {self.id_aukcije_id}"

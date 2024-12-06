@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password, check_password
-from .models import Korisnik
+from .models import Aukcija, Korisnik
+from cloudinary.uploader import upload
+from cloudinary.utils import cloudinary_url
 
 class KorisnikSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -47,3 +49,19 @@ class LoginSerializer(serializers.Serializer):
         
         attrs['korisnik'] = korisnik
         return attrs
+
+class AukcijaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Aukcija
+        fields = ['id_aukcije', 'aktivna', 'naziv', 'pocetna_cijena', 'buy_now_cijena', 'trajanje', 'informacije', 'datum', 'kreirao', 'slika']
+
+    def create(self, validated_data):
+        slika = validated_data.pop('slika', None)
+        aukcija = Aukcija.objects.create(**validated_data)
+
+        if slika:
+            cloudinary_response = upload(slika)
+            aukcija.slika = cloudinary_response.get('url')
+            aukcija.save()
+
+        return aukcija
