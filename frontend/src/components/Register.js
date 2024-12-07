@@ -101,7 +101,7 @@ const Register = () => {
           />
           {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
         </div>
-
+        
         {/* Username */}
         <div>
           <label>Username:</label>
