@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 
+const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
 const Register = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -13,6 +15,7 @@ const Register = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState("");
 
   // Handle form field changes
   const handleChange = (e) => {
@@ -73,13 +76,50 @@ const Register = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validate()) {
-      // Proceed with form submission (e.g., API call)
-      console.log("Form submitted successfully:", formData);
-      alert("User registered successfully!");
+      try {
+        const response = await fetch(`${apiUrl}/api/users/register/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ime: formData.firstName,
+            prezime: formData.lastName,
+            oib: formData.id,
+            adresa: formData.homeAddress,
+            korisnicko_ime: formData.username,
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setMessage(data.message);
+          setErrors({});
+          setFormData({
+            email: "",
+            username: "",
+            password: "",
+            confirmPassword: "",
+            firstName: "",
+            lastName: "",
+            id: "",
+            homeAddress: "",
+          });
+        } else {
+          setErrors(data); // API vraća greške validacije
+          setMessage("");
+        }
+      } catch (error) {
+        console.error("Greška prilikom registracije:", error);
+        setMessage("Došlo je do pogreške. Pokušajte ponovno kasnije.");
+      }
     } else {
       alert("Please fix the errors in the form.");
     }
@@ -88,6 +128,7 @@ const Register = () => {
   return (
     <div style={{ maxWidth: "500px", margin: "0 auto", padding: "20px" }}>
       <h2>Register</h2>
+      {message && <p style={{ color: "green" }}>{message}</p>}
       <form onSubmit={handleSubmit}>
         {/* Email */}
         <div>
@@ -101,7 +142,7 @@ const Register = () => {
           />
           {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
         </div>
-        
+
         {/* Username */}
         <div>
           <label>Username:</label>
