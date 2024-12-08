@@ -1,100 +1,101 @@
-/* General styling for the form container */
-.form-container {
+/* Register.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .form-container {
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     max-width: 600px;
-    margin: 100px auto; /* Centers the form and adds space below the navbar */
-    padding: 20px;
-    background-color: #f9f9f9; /* Light gray background for contrast */
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+    width: 100%;
   }
   
-  /* Heading styling */
   h2 {
-    text-align: center;
     margin-bottom: 20px;
-    font-size: 24px;
+    font-size: 1.8rem;
     color: #333;
+    text-align: center;
   }
   
-  /* Two-column layout for form inputs */
   .form-row {
     display: flex;
-    gap: 20px; /* Adds space between the two columns */
+    justify-content: space-between;
+    gap: 20px;
   }
   
-  /* Styling for form columns */
   .form-column {
-    flex: 1; /* Ensures equal width for both columns */
+    flex: 1;
   }
   
-  /* Individual input containers */
-  .form-column div {
-    margin-bottom: 15px;
-  }
-  
-  /* Labels */
   label {
     display: block;
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 5px;
+    font-size: 0.9rem;
     color: #555;
+    margin-bottom: 5px;
   }
   
-  /* Inputs */
   input {
     width: 100%;
     padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box; /* Ensures consistent padding and border rendering */
-  }
-  
-  /* Error messages */
-  .error {
-    font-size: 12px;
-    color: red;
-    margin-top: 5px;
-  }
-  
-  /* Success messages */
-  .success-message {
-    font-size: 14px;
-    color: green;
-    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
     margin-bottom: 15px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease-in-out;
   }
   
-  /* Submit button */
+  input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
   button {
     display: block;
     width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    color: #fff;
-    background-color: #007bff; /* Blue button */
+    background-color: #007bff;
+    color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
+    padding: 10px 15px;
+    font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
   
   button:hover {
-    background-color: #0056b3; /* Darker blue on hover */
+    background-color: #0056b3;
   }
   
-  /* Add space between the navbar and the form */
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+  .error {
+    color: #d9534f;
+    font-size: 0.8rem;
+    margin-top: -10px;
+    margin-bottom: 10px;
   }
   
-  html, body {
-    height: 100%;
+  .success-message {
+    color: #28a745;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    text-align: center;
   }
   
-  body > .form-container {
-    margin-top: 80px; /* Ensures it's not glued to the navbar */
+  @media (max-width: 768px) {
+    .form-row {
+      flex-direction: column;
+    }
+  
+    .form-column {
+      width: 100%;
+    }
   }
