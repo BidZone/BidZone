@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "./Register.css";
 
+const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
 const Register = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -14,6 +16,7 @@ const Register = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState("");
 
   // Handle form field changes
   const handleChange = (e) => {
@@ -66,12 +69,51 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validate()) {
-      console.log("Form submitted successfully:", formData);
-      alert("User registered successfully!");
+      try {
+        const response = await fetch(`${apiUrl}/api/users/register/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ime: formData.firstName,
+            prezime: formData.lastName,
+            oib: formData.id,
+            adresa: formData.homeAddress,
+            korisnicko_ime: formData.username,
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setMessage(data.message);
+          setErrors({});
+          setFormData({
+            email: "",
+            username: "",
+            password: "",
+            confirmPassword: "",
+            firstName: "",
+            lastName: "",
+            id: "",
+            homeAddress: "",
+          });
+        } else {
+          setErrors(data); // API vraća greške validacije
+          setMessage("");
+        }
+      } catch (error) {
+        console.error("Greška prilikom registracije:", error);
+        setMessage("Došlo je do pogreške. Pokušajte ponovno kasnije.");
+      }
     } else {
       alert("Please fix the errors in the form.");
     }
@@ -80,7 +122,118 @@ const Register = () => {
   return (
     <div className="form-container">
       <h2>Register</h2>
+      {message && <p style={{ color: "green" }}>{message}</p>}
       <form onSubmit={handleSubmit}>
+        {/* Email */}
+        <div>
+          <label>Email:</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+          {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+        </div>
+
+        {/* Username */}
+        <div>
+          <label>Username:</label>
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            required
+          />
+          {errors.username && <p style={{ color: "red" }}>{errors.username}</p>}
+        </div>
+
+        {/* Password */}
+        <div>
+          <label>Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+          {errors.password && <p style={{ color: "red" }}>{errors.password}</p>}
+        </div>
+
+        {/* Confirm Password */}
+        <div>
+          <label>Confirm Password:</label>
+          <input
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            required
+          />
+          {errors.confirmPassword && (
+            <p style={{ color: "red" }}>{errors.confirmPassword}</p>
+          )}
+        </div>
+
+        {/* First Name */}
+        <div>
+          <label>First Name:</label>
+          <input
+            type="text"
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
+            required
+          />
+          {errors.firstName && (
+            <p style={{ color: "red" }}>{errors.firstName}</p>
+          )}
+        </div>
+
+        {/* Last Name */}
+        <div>
+          <label>Last Name:</label>
+          <input
+            type="text"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            required
+          />
+          {errors.lastName && (
+            <p style={{ color: "red" }}>{errors.lastName}</p>
+          )}
+        </div>
+
+        {/* ID */}
+        <div>
+          <label>ID (11 digits):</label>
+          <input
+            type="text"
+            name="id"
+            value={formData.id}
+            onChange={handleChange}
+            required
+          />
+          {errors.id && <p style={{ color: "red" }}>{errors.id}</p>}
+        </div>
+
+        {/* Home Address */}
+        <div>
+          <label>Home Address:</label>
+          <input
+            type="text"
+            name="homeAddress"
+            value={formData.homeAddress}
+            onChange={handleChange}
+            required
+          />
+          {errors.homeAddress && (
+            <p style={{ color: "red" }}>{errors.homeAddress}</p>
+          )}
         <div className="form-row">
           <div className="form-column">
             <div>
