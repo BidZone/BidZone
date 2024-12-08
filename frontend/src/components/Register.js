@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import './Register.css';
 
 const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
@@ -113,12 +114,12 @@ const Register = () => {
             homeAddress: "",
           });
         } else {
-          setErrors(data); // API vraća greške validacije
+          setErrors(data); // API validation errors
           setMessage("");
         }
       } catch (error) {
-        console.error("Greška prilikom registracije:", error);
-        setMessage("Došlo je do pogreške. Pokušajte ponovno kasnije.");
+        console.error("Error during registration:", error);
+        setMessage("An error occurred. Please try again later.");
       }
     } else {
       alert("Please fix the errors in the form.");
@@ -126,122 +127,108 @@ const Register = () => {
   };
 
   return (
-    <div style={{ maxWidth: "500px", margin: "0 auto", padding: "20px" }}>
+    <div className="form-container">
       <h2>Register</h2>
-      {message && <p style={{ color: "green" }}>{message}</p>}
+      {message && <p className="success-message">{message}</p>}
       <form onSubmit={handleSubmit}>
-        {/* Email */}
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+        <div className="form-row">
+          <div className="form-column">
+            <div>
+              <label>Email:</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+              {errors.email && <p className="error">{errors.email}</p>}
+            </div>
+            <div>
+              <label>Username:</label>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+              />
+              {errors.username && <p className="error">{errors.username}</p>}
+            </div>
+            <div>
+              <label>Password:</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              {errors.password && <p className="error">{errors.password}</p>}
+            </div>
+            <div>
+              <label>Confirm Password:</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+              {errors.confirmPassword && (
+                <p className="error">{errors.confirmPassword}</p>
+              )}
+            </div>
+          </div>
+          <div className="form-column">
+            <div>
+              <label>First Name:</label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+              />
+              {errors.firstName && <p className="error">{errors.firstName}</p>}
+            </div>
+            <div>
+              <label>Last Name:</label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+              />
+              {errors.lastName && <p className="error">{errors.lastName}</p>}
+            </div>
+            <div>
+              <label>ID (11 digits):</label>
+              <input
+                type="text"
+                name="id"
+                value={formData.id}
+                onChange={handleChange}
+                required
+              />
+              {errors.id && <p className="error">{errors.id}</p>}
+            </div>
+            <div>
+              <label>Home Address:</label>
+              <input
+                type="text"
+                name="homeAddress"
+                value={formData.homeAddress}
+                onChange={handleChange}
+                required
+              />
+              {errors.homeAddress && (
+                <p className="error">{errors.homeAddress}</p>
+              )}
+            </div>
+          </div>
         </div>
-
-        {/* Username */}
-        <div>
-          <label>Username:</label>
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-          {errors.username && <p style={{ color: "red" }}>{errors.username}</p>}
-        </div>
-
-        {/* Password */}
-        <div>
-          <label>Password:</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          {errors.password && <p style={{ color: "red" }}>{errors.password}</p>}
-        </div>
-
-        {/* Confirm Password */}
-        <div>
-          <label>Confirm Password:</label>
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-          {errors.confirmPassword && (
-            <p style={{ color: "red" }}>{errors.confirmPassword}</p>
-          )}
-        </div>
-
-        {/* First Name */}
-        <div>
-          <label>First Name:</label>
-          <input
-            type="text"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            required
-          />
-          {errors.firstName && (
-            <p style={{ color: "red" }}>{errors.firstName}</p>
-          )}
-        </div>
-
-        {/* Last Name */}
-        <div>
-          <label>Last Name:</label>
-          <input
-            type="text"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-            required
-          />
-          {errors.lastName && (
-            <p style={{ color: "red" }}>{errors.lastName}</p>
-          )}
-        </div>
-
-        {/* ID */}
-        <div>
-          <label>ID (11 digits):</label>
-          <input
-            type="text"
-            name="id"
-            value={formData.id}
-            onChange={handleChange}
-            required
-          />
-          {errors.id && <p style={{ color: "red" }}>{errors.id}</p>}
-        </div>
-
-        {/* Home Address */}
-        <div>
-          <label>Home Address:</label>
-          <input
-            type="text"
-            name="homeAddress"
-            value={formData.homeAddress}
-            onChange={handleChange}
-            required
-          />
-          {errors.homeAddress && (
-            <p style={{ color: "red" }}>{errors.homeAddress}</p>
-          )}
-        </div>
-
         <button type="submit">Register</button>
       </form>
     </div>
