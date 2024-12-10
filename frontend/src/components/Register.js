@@ -37,8 +37,8 @@ const Register = () => {
     }
 
     // Username validation (5-6 symbols)
-    if (formData.username.length < 5 || formData.username.length > 6) {
-      newErrors.username = "Username must be between 5 and 6 characters.";
+    if (formData.username.length < 5 || formData.username.length > 12) {
+      newErrors.username = "Username must be between 5 and 12 characters.";
     }
 
     // Password validation (min 8 symbols, at least one letter and one number)
