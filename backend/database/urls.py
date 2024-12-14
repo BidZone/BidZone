@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
-    path('auction/create/', AukcijaCreateView.as_view(), name='create_auction'),
+    path('auctions/create/', AukcijaCreateView.as_view(), name='create_auction'),
+    path('auctions/', views.get_auctions, name='get_auctions'),
     path('verify-email/<uidb64>/<token>/', views.verify_email, name='verify_email')
 ]

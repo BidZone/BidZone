@@ -173,3 +173,5 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 CORS_ALLOWED_ORIGINS = [
     env("FRONTEND_WEBSITE"),
 ]
+
+FRONTEND_WEBSITE = env("FRONTEND_WEBSITE")

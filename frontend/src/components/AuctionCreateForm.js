@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import './AuctionCreateForm.css';
+
+const apiUrl = process.env.REACT_APP_API_BASE_URL; // Baza URL-a za API
 
 const AuctionCreateForm = () => {
     const [formData, setFormData] = useState({
@@ -36,18 +37,27 @@ const AuctionCreateForm = () => {
         setError(null);
         setSuccess(null);
 
+        // FormData objekt za slanje multipart/form-data
         const data = new FormData();
         for (const key in formData) {
             data.append(key, formData[key]);
         }
 
         try {
-            const response = await axios.post("/auction/create/", data, {
+            const response = await fetch(`${apiUrl}/api/users/auctions/create/`, {
+                method: "POST",
                 headers: {
-                    "Content-Type": "multipart/form-data",
-                    Authorization: `Bearer ${localStorage.getItem("token")}` // Assumes JWT token stored in localStorage
-                }
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}` // Token iz localStorage
+                },
+                body: data,
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Failed to create auction.");
+            }
+
+            const result = await response.json();
             setSuccess("Auction created successfully!");
             setFormData({
                 naziv: "",
@@ -59,7 +69,7 @@ const AuctionCreateForm = () => {
                 slika: null
             });
         } catch (err) {
-            setError("Failed to create auction. Please try again.");
+            setError(err.message || "An error occurred. Please try again.");
         }
     };
 

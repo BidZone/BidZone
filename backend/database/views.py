@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -19,8 +20,10 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils import timezone
 
 from rest_framework import status, generics, permissions
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes
 
 import jwt
 
@@ -117,6 +120,13 @@ class AukcijaCreateView(generics.CreateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_auctions(request):
+    auctions = Aukcija.objects.filter(aktivna=True).order_by("-datum")
+    serializer = AukcijaSerializer(auctions, many=True)
+    return Response(serializer.data)
+
 def send_verification_email(user, request):
     # Generiraj token i uid
     token = token_generator.make_token(user)
@@ -170,12 +180,17 @@ def verify_email(request, uidb64, token):
         if token_generator.check_token(user, token):
             user.potvrden = True
             user.save()
+
+            # Postavi poruku uspješne verifikacije
             messages.success(request, "Vaš email je potvrđen. Sada se možete prijaviti.")
-            return redirect('login')
+
+            # Redirekt na glavnu stranicu ili stranicu za potvrdu
+            frontend_website = getattr(settings, "FRONTEND_WEBSITE")
+            return redirect(f"{frontend_website}/email-verified")  # Ovdje /email-verified može biti putanja za poruku
         else:
             messages.error(request, "Token je istekao ili je nevažeći.")
             return redirect('register')
     
-    except (TypeError, ValueError, OverflowError, Korisnik.DoesNotExist):
+    except (TypeError, ValueError, OverflowError, ObjectDoesNotExist):
         messages.error(request, "Nevažeći registracijski link.")
         return redirect('register')
