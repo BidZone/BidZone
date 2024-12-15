@@ -1,0 +1,100 @@
+/* MainPage.css */
+
+body {
+    font-family: 'Arial, sans-serif';
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #f9f9f9;
+  }
+  
+  .main-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .header {
+    background-color: #28a745; /* Green */
+    color: white;
+    text-align: center;
+    padding: 40px 20px;
+    border-radius: 10px;
+  }
+  
+  .header h1 {
+    font-size: 2.5rem;
+    margin: 0;
+  }
+  
+  .header p {
+    font-size: 1.2rem;
+    color:white
+
+  }
+  
+  .about-section, .what-we-do-section, .gallery-section {
+    margin: 40px 0;
+  }
+  
+  h2 {
+    font-size: 2rem;
+    text-align: center;
+    color: #333; /* Black */
+  }
+  
+  .about-section p {
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    color:black
+
+  }
+  
+  .what-we-do-section ul {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+  }
+  
+  .what-we-do-section li {
+    font-size: 1rem;
+    margin: 10px 0;
+  }
+  
+  .gallery-section {
+    text-align: center;
+  }
+  
+  .gallery {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .gallery-image {
+    width: 250px;
+    height: 150px;
+    margin: 10px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .footer {
+    background-color: #28a745; /* Green */
+    color: white;
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 40px;
+  }
+  
+  .footer p {
+    font-size: 1rem;
+    margin: 0;
+    color:white
+  }
+  
