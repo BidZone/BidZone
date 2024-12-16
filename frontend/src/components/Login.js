@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext"; // Import AuthContext
+import "./Login.css";
 
 const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
