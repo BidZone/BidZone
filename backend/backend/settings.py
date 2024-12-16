@@ -35,7 +35,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['bidzoneapi.onrender.com', '127.0.0.1', 'localhost']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -179,7 +178,5 @@ FRONTEND_WEBSITE = env("FRONTEND_WEBSITE")
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'id_korisnika',  # Polje u korisničkom modelu
     'USER_ID_CLAIM': 'id_korisnika',  # Polje u JWT payload-u
-    'AUTH_HEADER_TYPES': ('Bearer',),  # Tip zaglavlja
-    'SIGNING_KEY': SECRET_KEY,  # Tajni ključ za potpisivanje
-    'ALGORITHM': 'HS256',  # Algoritam za potpisivanje
+    'JTI_CLAIM': None,
 }
