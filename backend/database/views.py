@@ -89,6 +89,8 @@ class LoginView(APIView):
         
         payload = {
             'id_korisnika': korisnik.id_korisnika,
+            # 'jti': str(uuid.uuid4()),
+            'token_type': 'access',
             'ime': korisnik.ime,
             'exp': timezone.now() + timedelta(days=1), # token traje 1 dan
             'iat': timezone.now()
