@@ -1,6 +1,13 @@
+.auctions-page {
+    padding: 20px 40px; /* Padding on the left and right */
+    min-height: 100vh; /* Ensure it covers the full height of the viewport */
+    overflow-y: auto; /* Allow vertical scrolling */
+    box-sizing: border-box; /* Include padding in height calculations */
+}
+
 .auction-list {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Four items per row */
     gap: 20px;
     margin-top: 20px;
 }
@@ -10,8 +17,8 @@
     border: 1px solid #ccc;
     border-radius: 8px;
     padding: 20px;
-    width: calc(33.333% - 20px); /* Three items per row */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center; /* Center content */
 }
 
 .auction-item h3 {
@@ -23,4 +30,12 @@
     margin: 5px 0;
     font-size: 14px;
     color: #555;
+}
+
+.auction-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 10px auto;
 }
