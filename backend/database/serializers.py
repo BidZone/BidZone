@@ -65,3 +65,28 @@ class AukcijaSerializer(serializers.ModelSerializer):
             aukcija.save()
 
         return aukcija
+    
+class PaymentSerializer(serializers.Serializer):
+    amount = serializers.FloatField(min_value=0.01)
+
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Iznos uplate mora biti pozitivan!")
+        return value
+    
+class WithdrawalSerializer(serializers.Serializer):
+    amount = serializers.FloatField(min_value=0.01)
+
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Iznos isplate mora biti pozitivan.")
+        return value
+
+    def validate(self, attrs):
+        korisnik = attrs.get('korisnik')
+        amount = attrs.get('amount')
+
+        if korisnik.balans < amount:
+            raise serializers.ValidationError("Nemate dovoljno sredstava na računu.")
+        
+        return attrs

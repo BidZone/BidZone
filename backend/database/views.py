@@ -1,6 +1,6 @@
 
 from .models import Aukcija, Korisnik
-from .serializers import AukcijaSerializer, KorisnikSerializer, LoginSerializer
+from .serializers import AukcijaSerializer, KorisnikSerializer, LoginSerializer, PaymentSerializer, WithdrawalSerializer
 from .tokens import token_generator
 
 from datetime import datetime, timedelta
@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.tokens import default_token_generator
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -19,7 +19,7 @@ from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils import timezone
 
-from rest_framework import status, generics, permissions
+from rest_framework import status, generics, permissions, serializers
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -131,6 +131,46 @@ def get_auctions(request):
     auctions = Aukcija.objects.filter(aktivna=True).order_by("-datum")
     serializer = AukcijaSerializer(auctions, many=True)
     return Response(serializer.data)
+
+@api_view(['POST'])
+def deposit_money(request):
+    authentication_classes = [CustJWTAuthentication]
+    serializer = PaymentSerializer(data=request.data)
+    permission_classes = [permissions.IsAuthenticated]
+
+    if serializer.is_valid():
+        amount = serializer.validated_data['amount']
+        korisnik = request.user
+        
+        korisnik.balans += amount
+        korisnik.save()
+
+        return Response({
+            "message": "Uplata je uspješno izvršena.",
+            "new_balance": korisnik.balans
+        }, status=status.HTTP_200_OK)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def withdraw_money(request):
+    authentication_classes = [CustJWTAuthentication]
+    serializer = WithdrawalSerializer(data=request.data)
+    permission_classes = [permissions.IsAuthenticated]
+
+    if serializer.is_valid():
+        amount = serializer.validated_data['amount']
+        korisnik = request.user
+
+        korisnik.balans -= amount
+        korisnik.save()
+
+        return Response({
+            "message": "Isplata je uspješno izvršena.",
+            "new_balance": korisnik.balans
+        }, status=status.HTTP_200_OK)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 def send_verification_email(user, request):
     # Generiraj token i uid
