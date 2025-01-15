@@ -16,7 +16,9 @@ class Korisnik(models.Model):
     potvrden = models.BooleanField(default=False)
     ocjena = models.FloatField(null=True, blank=True)
     datum_kreiranja = models.DateTimeField(auto_now_add=True)
-
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_authenticated = models.BooleanField(default=True)
     def __str__(self):
         return f"{self.ime} {self.prezime}"
     

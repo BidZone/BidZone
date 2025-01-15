@@ -25,6 +25,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 
+from .authentication import CustJWTAuthentication
+
 import jwt
 
 class RegisterView(generics.CreateAPIView):
@@ -109,6 +111,7 @@ class LoginView(APIView):
         }, status=status.HTTP_200_OK)
         
 class AukcijaCreateView(generics.CreateAPIView):
+    authentication_classes = [CustJWTAuthentication]
     serializer_class = AukcijaSerializer
     permission_classes = [permissions.IsAuthenticated]
 
