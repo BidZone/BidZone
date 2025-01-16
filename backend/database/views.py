@@ -1,7 +1,9 @@
-
-from .models import Aukcija, Korisnik
+from .authentication import CustJWTAuthentication
+from .models import Aukcija, Korisnik, Ponuda
 from .serializers import AukcijaSerializer, KorisnikSerializer, LoginSerializer, PaymentSerializer, WithdrawalSerializer
 from .tokens import token_generator
+
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from datetime import datetime, timedelta
 
@@ -12,6 +14,7 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.mail import send_mail, EmailMultiAlternatives
+from django.db.models import F, Max
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
@@ -24,8 +27,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
-
-from .authentication import CustJWTAuthentication
 
 import jwt
 
@@ -171,6 +172,127 @@ def withdraw_money(request):
         }, status=status.HTTP_200_OK)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+scheduler = BackgroundScheduler()
+
+def provjeri_aukcije():
+    zavrsene_aukcije = Aukcija.objects.filter(aktivna=True, datum__lte=timezone.now() - F('trajanje'))
+    for aukcija in zavrsene_aukcije:
+        aukcija.aktivna = False
+        aukcija.save()
+        ponude = Ponuda.objects.filter(id_aukcije=aukcija).order_by('-iznos')
+
+        if ponude.exists():
+            pobjednik = ponude.first()
+            pobjednik.id_korisnika.balans -= pobjednik.iznos
+            pobjednik.id_korisnika.zamrznuti_balans -= pobjednik.iznos
+            pobjednik.id_korisnika.save()
+
+            organizator = aukcija.kreirao
+            organizator.balans += pobjednik.iznos
+            organizator.save()
+
+            for ponuda in ponude[1:]:
+                korisnik = ponuda.id_korisnika
+                korisnik.zamrznuti_balans -= ponuda.iznos
+                korisnik.save()
+
+scheduler.add_job(provjeri_aukcije, 'interval', minutes=5)
+scheduler.start()
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def detalji_aukcije(request, id_aukcije):
+    try:
+        aukcija = Aukcija.objects.get(id_aukcije=id_aukcije)
+    except Aukcija.DoesNotExist:
+        return Response({"error": "Aukcija ne postoji."}, status=status.HTTP_404_NOT_FOUND)
+    
+    najveca_ponuda = Ponuda.objects.filter(id_aukcije=aukcija).aggregate(Max('iznos'))['iznos__max']
+
+    data = {
+        "id_aukcije": aukcija.id_aukcije,
+        "naziv": aukcija.naziv,
+        "pocetna_cijena": aukcija.pocetna_cijena,
+        "buy_now_cijena": aukcija.buy_now_cijena,
+        "trajanje": aukcija.trajanje,
+        "informacije": aukcija.informacije,
+        "datum": aukcija.datum,
+        "aktivna": aukcija.aktivna,
+        "kreirao": aukcija.kreirao.korisnicko_ime if aukcija.kreirao else None,
+        "najveca_ponuda": najveca_ponuda,
+    }
+    
+    return Response(data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def bidanje(request, id_aukcije):
+    authentication_classes = [CustJWTAuthentication]
+    serializer = WithdrawalSerializer(data=request.data)
+    permission_classes = [permissions.IsAuthenticated]
+
+    korisnik = request.user
+    iznos = request.data.get('iznos')
+
+    if not iznos:
+        return Response({"error": "Iznos ponude je obavezan"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        aukcija = Aukcija.objects.get(id_aukcije=id_aukcije, aktivna=True)
+    except Aukcija.DoesNotExist:
+        return Response({"error": "Aukcija nije aktivna ili ne postoji."}, status=status.HTTP_404_NOT_FOUND)
+    
+    najveca_ponuda = Ponuda.objects.filter(id_aukcije=aukcija).aggregate(Max('iznos'))['iznos__max']
+    if najveca_ponuda is None:
+        najveca_ponuda = aukcija.pocetna_cijena
+
+    if float(iznos) <= float(najveca_ponuda):
+        return Response({"error": "Ponuda mora biti veća od trenutne najveće ponude ili početne cijene"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    existing_ponuda = Ponuda.objects.filter(id_korisnika=korisnik, id_aukcije=aukcija).order_by('vrijeme').first()
+
+    nova_ponuda = Ponuda.objects.create(id_korisnika=korisnik, id_aukcije=aukcija, iznos=iznos, vrijeme=timezone.now())
+
+    if existing_ponuda:
+        razlika = float(iznos) - float(existing_ponuda.iznos)
+        if razlika > 0:
+            korisnik.zamrznuti_balans += razlika
+            korisnik.save()
+    else:
+        korisnik.zamrznuti_balans += float(iznos)
+        korisnik.save()
+    
+    return Response({"message": "Ponuda uspješno postavljena."}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def buy_now(request, id_aukcije):
+    authentication_classes = [CustJWTAuthentication]
+    serializer = WithdrawalSerializer(data=request.data)
+    permission_classes = [permissions.IsAuthenticated]
+    korisnik = request.user
+
+    try:
+        aukcija = Aukcija.objects.get(id_aukcije=id_aukcije, aktivna=True)
+    except Aukcija.DoesNotExist:
+        return Response({"error": "Aukcija nije aktivna ili ne postoji."}, status=status.HTTP_404_NOT_FOUND)
+    
+    if aukcija.buy_now_cijena is None:
+        return Response({"error": "Ova aukcija nema opciju 'Buy Now'."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if float(korisnik.balans - korisnik.zamrznuti_balans) < float(aukcija.buy_now_cijena):
+        return Response({"error": "Nemate dovoljno sredstava za 'Buy Now'."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    korisnik.balans -= float(aukcija.buy_now_cijena)
+    korisnik.save()
+
+    organizator = aukcija.kreirao
+    organizator.balans += float(aukcija.buy_now_cijena)
+    organizator.save()
+
+    aukcija.aktivna = False
+    aukcija.save()
+
+    return Response({"message": "Kupnja uspješno izvršena preko 'Buy Now."}, status=status.HTTP_200_OK)
 
 def send_verification_email(user, request):
     # Generiraj token i uid

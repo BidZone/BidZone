@@ -10,4 +10,7 @@ urlpatterns = [
     path('verify-email/<uidb64>/<token>/', views.verify_email, name='verify_email'),
     path('deposit/', views.deposit_money, name='deposit_money'),
     path('withdraw/', views.withdraw_money, name='withdraw_money'),
+    path('bidanje/<int:id_aukcije>/', views.bidanje, name='bidanje'),
+    path('aukcija/<int:id_aukcije>/', views.detalji_aukcije, name='detalji_aukcije'),
+    path('buy_now/<int:id_aukcije>/', views.buy_now, name='buy_now'),
 ]
