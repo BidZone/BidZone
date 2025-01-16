@@ -104,11 +104,13 @@ npm start
 - Create new auctions or browse and bid on existing ones.
 - To access admin panel, go to `http://localhost:8000/admin`.
 
-## Contributors
-- **[Karlo Bogetić](https://github.com/BogeticKarlo)** - Frontend Developer
-- **[Ante Goreta](https://www.github.com/goretante)** - Backend Developer & Database Architect
-- **[Barti Kujundžić](https://github.com/KraljBarti)** - Documentation
-- **[Marin Mesarić](https://www.github.com/marinmesaric)** - Frontend Developer
+## Team members
+| **Team member**                                                   | **Task**             |
+|-------------------------------------------------------------------|----------------------|
+| [Karlo Bogetić](https://github.com/BogeticKarlo)                  | frontend             |
+| [Ante Goreta](https://www.github.com/goretante)                   | backend, database    |
+| [Barti Kujundžić](https://github.com/KraljBarti)                  | documentation        |
+| [Marin Mesarić](https://www.github.com/marinmesaric)              | frontend             |
 
 ## License
 
