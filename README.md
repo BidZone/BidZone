@@ -1,6 +1,8 @@
-# BidZone - THIS IS JUST A TEMPLATE README
+# BidZone
 
-**BidZone** is a web application for hosting and participating in online auctions. This project enables users to create auctions, bid on items, and manage auction activities in a secure and efficient manner.
+BidZone is a web application designed for hosting and participating in online auctions. It enables users to create auctions, bid on items and manage auction activities efficiently.
+
+The demo application is deployed at [https://bidzone.onrender.com/](https://bidzone.onrender.com/).
 
 ## Table of Contents
 - [Features](#features)
@@ -12,122 +14,102 @@
 - [License](#license)
 
 ## Features
+- **User Authentication**: Register, log in, and manage user accounts.
+- **Auction Management**: Create auctions with details like title, description, images, and starting price.
+- **Bidding System**: Place bids on active auctions.
+- **Auction Results**: Automatic announcement of auction winners.
+- **Transaction Management**: Track auction results and payments.
 
-- **User Authentication**: Users can register, log in, and manage their accounts.
-- **Auction Management**: Sellers can create auctions with details like title, description, images, and starting price.
-- **Bidding System**: Registered users can place bids on active auctions.
-- **Notifications**: Users receive real-time notifications when they are outbid or when an auction ends.
-- **Auction Results**: Automatic announcement of auction winners once the auction ends.
-- **Transaction Management**: Support for tracking auction results and payments (optional).
-- **Admin Panel**: Admins can manage auctions and users.
-- **User History**: Users can track their auction participation history.
-  
 ## Technologies
-
-- **Frontend**: React, Bootstrap
-- **Backend**: Django (Django REST Framework)
+- **Frontend**: React.js
+- **Backend**: Django
 - **Database**: PostgreSQL
-- **Authentication**: Django Allauth (or other authentication libraries)
-- **Notifications**: Websockets/REST API
-- **Deployment**: Docker (optional)
+- **Authentication**: JSON Web Tokens (JWT)
+- **Deployment:** Render.com
 
 ## Installation
 
-### Prerequisites
-
-- Python 3.x
-- Node.js (with npm)
-- PostgreSQL
-
-### Backend Setup
-
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/BidZone/BidZone.git
-    cd bidzone
-    ```
-
-2. Create a virtual environment and activate it:
-    ```bash
-    pipenv install
-    source env/bin/activate   # On Windows use `env\Scripts\activate`
-    pipenv shell
-    ```
-
-3. Install the backend dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4. Set up PostgreSQL:
-    - Create a new PostgreSQL database.
-    - Update the database settings in `settings.py`:
-      ```python
-      DATABASES = {
-          'default': {
-              'ENGINE': 'django.db.backends.postgresql',
-              'NAME': 'your_db_name',
-              'USER': 'your_db_user',
-              'PASSWORD': 'your_db_password',
-              'HOST': 'localhost',
-              'PORT': '5432',
-          }
-      }
-      ```
-
-5. Run migrations:
-    ```bash
-    python manage.py migrate
-    ```
-
-6. Start the Django development server:
-    ```bash
-    python manage.py runserver
-    ```
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-    ```bash
-    cd frontend
-    ```
-
-2. Install frontend dependencies:
-    ```bash
-    npm install
-    ```
-
-3. Start the React development server:
-    ```bash
-    npm start
-    ```
-
+1. **Clone the repository**:
+```bash
+git clone https://github.com/BidZone/BidZone.git
+```
+2. **Navigate to the project directory**:
+```bash
+cd BidZone
+```
+3. **Set up the backend**:
+- Navigate to the backend directory:
+```bash
+cd backend
+```
+- Create and activate a virtual environment:
+```bash
+python -m venv env
+source env/bin/activate # On Windows: env\Scripts\activate
+```
+- Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+- Create .env file with this content:
+```bash
+DB_HOST=dbhost
+DB_NAME=dbname
+DB_PASSWORD=dbpass
+DB_PORT=dbport
+DB_USER=dbuser
+SECRET_KEY=django_secret_key
+EMAIL_HOST=your_email_host
+EMAIL_PORT=your_email_port
+EMAIL_HOST_USER=your_email_host_user # usually email address
+EMAIL_HOST_PASSWORD=your_email_host_password
+CLOUD_NAME=your_cloudinary_cloud_name
+API_KEY=cloudinary_api_key
+API_SECRET=cloudinay_api_secret
+FRONTEND_WEBSITE=http://localhost:3000 # for hosting on local machine
+```
+- Make migrations:
+```bash
+python manage.py makemigrations
+```
+- Apply migrations:
+```bash
+python manage.py migrate
+```
+- Start the backend server:
+```bash
+python manage.py runserver
+```
+4. **Set up the frontend**:
+- Navigate to the frontend directory:
+```bash
+cd ../frontend
+```
+- Install dependencies:
+```bash
+npm install
+```
+- Create .env file with this content:
+```bash
+REACT_APP_API_BASE_URL=http://localhost:8000 # or your backend url
+```
+- Start the frontend development server:
+```bash
+npm start
+```
 ## Usage
 
-- Navigate to `http://localhost:3000` to access the React frontend.
-- Use `http://localhost:8000/admin` for the Django admin panel.
-- Users can register, log in, and participate in auctions from the user interface.
-
-## API Documentation
-
-The Django REST API provides endpoints for managing auctions, users, and bids. You can explore the API using tools like Postman or the Django REST Framework’s browsable API.
-
-Some core endpoints:
-- `POST /api/register/`: Register a new user.
-- `POST /api/login/`: Log in to the platform.
-- `GET /api/auctions/`: List all active auctions.
-- `POST /api/auctions/create/`: Create a new auction (requires authentication).
-- `POST /api/bids/`: Place a bid on an auction (requires authentication).
-
-For detailed API documentation, refer to the `api_docs.md` file.
+- Access the application at `http://localhost:3000`.
+- Register a new account or log in with existing credentials.
+- Create new auctions or browse and bid on existing ones.
+- To access admin panel, go to `http://localhost:8000/admin`.
 
 ## Contributors
-
-- **Karlo Bogetić** - Developer
-- **Ante Goreta** - Developer
-- **Barti Kujundžić** - Developer
-- **Marin Mesarić** - Developer
+- **[Karlo Bogetić](https://github.com/BogeticKarlo)** - Frontend Developer
+- **[Ante Goreta](https://www.github.com/goretante)** - Backend Developer & Database Architect
+- **[Barti Kujundžić](https://github.com/KraljBarti)** - Documentation
+- **[Marin Mesarić](https://www.github.com/marinmesaric)** - Frontend Developer
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/BidZone/BidZone/blob/main/LICENSE) file for details.
