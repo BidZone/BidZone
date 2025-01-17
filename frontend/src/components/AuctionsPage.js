@@ -9,126 +9,51 @@ const AuctionsPage = () => {
     const [loading, setLoading] = useState(true); // Loading indicator state
     const [error, setError] = useState(null); // Error state
     const [showForm, setShowForm] = useState(false);
+    const [selectedAuction, setSelectedAuction] = useState(null); // State for the selected auction (popup)
 
     const handleToggleForm = () => {
         setShowForm(!showForm);
     };
 
-    // Dummy auction data
-    const dummyAuctions = [
-        {
-            id_aukcije: 1,
-            naziv: "Vintage Watch",
-            pocetna_cijena: 50,
-            buy_now_cijena: 150,
-            informacije: "A rare vintage wristwatch from the 1950s.",
-            datum: "2024-12-20",
-            slika: "https://via.placeholder.com/150/4CAF50/FFFFFF?text=Watch",
-        },
-        {
-            id_aukcije: 2,
-            naziv: "Antique Vase",
-            pocetna_cijena: 100,
-            buy_now_cijena: 300,
-            informacije: "A beautifully crafted antique porcelain vase.",
-            datum: "2024-12-18",
-            slika: "https://via.placeholder.com/150/FFC107/FFFFFF?text=Vase",
-        },
-        {
-            id_aukcije: 3,
-            naziv: "Luxury Handbag",
-            pocetna_cijena: 200,
-            buy_now_cijena: 600,
-            informacije: "A designer handbag in excellent condition.",
-            datum: "2024-12-25",
-            slika: "https://via.placeholder.com/150/E91E63/FFFFFF?text=Handbag",
-        },
-        {
-            id_aukcije: 4,
-            naziv: "Mountain Bike",
-            pocetna_cijena: 150,
-            buy_now_cijena: 500,
-            informacije: "A high-quality mountain bike, barely used.",
-            datum: "2024-12-30",
-            slika: "https://via.placeholder.com/150/2196F3/FFFFFF?text=Bike",
-        },
-        {
-            id_aukcije: 5,
-            naziv: "Guitar",
-            pocetna_cijena: 120,
-            buy_now_cijena: 400,
-            informacije: "A vintage acoustic guitar in great condition.",
-            datum: "2024-12-28",
-            slika: "https://via.placeholder.com/150/9C27B0/FFFFFF?text=Guitar",
-        },
-        {
-            id_aukcije: 6,
-            naziv: "Smartphone",
-            pocetna_cijena: 300,
-            buy_now_cijena: 800,
-            informacije: "Latest model with top-notch features.",
-            datum: "2024-12-26",
-            slika: "https://via.placeholder.com/150/00BCD4/FFFFFF?text=Phone",
-        },
-        {
-            id_aukcije: 7,
-            naziv: "Painting",
-            pocetna_cijena: 500,
-            buy_now_cijena: 1500,
-            informacije: "An original oil painting by a famous artist.",
-            datum: "2024-12-29",
-            slika: "https://via.placeholder.com/150/4CAF50/FFFFFF?text=Painting",
-        },
-        {
-            id_aukcije: 8,
-            naziv: "Laptop",
-            pocetna_cijena: 400,
-            buy_now_cijena: 1000,
-            informacije: "A powerful laptop, perfect for gaming and work.",
-            datum: "2024-12-23",
-            slika: "https://via.placeholder.com/150/FFC107/FFFFFF?text=Laptop",
-        },
-        {
-            id_aukcije: 9,
-            naziv: "Camera",
-            pocetna_cijena: 250,
-            buy_now_cijena: 750,
-            informacije: "A professional DSLR camera with accessories.",
-            datum: "2024-12-27",
-            slika: "https://via.placeholder.com/150/E91E63/FFFFFF?text=Camera",
-        },
-        {
-            id_aukcije: 10,
-            naziv: "Gaming Console",
-            pocetna_cijena: 200,
-            buy_now_cijena: 600,
-            informacije: "A next-gen gaming console with two controllers.",
-            datum: "2024-12-24",
-            slika: "https://via.placeholder.com/150/2196F3/FFFFFF?text=Console",
-        },
-        {
-            id_aukcije: 11,
-            naziv: "Jewelry Set",
-            pocetna_cijena: 700,
-            buy_now_cijena: 2000,
-            informacije: "An exquisite gold and diamond jewelry set.",
-            datum: "2024-12-22",
-            slika: "https://via.placeholder.com/150/9C27B0/FFFFFF?text=Jewelry",
-        },
-        {
-            id_aukcije: 12,
-            naziv: "Drone",
-            pocetna_cijena: 350,
-            buy_now_cijena: 900,
-            informacije: "A high-performance drone with 4K camera.",
-            datum: "2024-12-21",
-            slika: "https://via.placeholder.com/150/00BCD4/FFFFFF?text=Drone",
-        },
-    ];
-
+    // Fetch auction list
     useEffect(() => {
-        setAuctions(dummyAuctions); // Set dummy data until the backend is fixed
+        const fetchAuctions = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/users/auctions/`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setAuctions(data); // Set fetched data
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAuctions();
     }, []);
+
+    // Handle auction click to fetch details for the popup
+    const handleAuctionClick = async (id) => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/users/aukcija/${id}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            setSelectedAuction(data); // Set the fetched auction as the selected auction
+        } catch (err) {
+            console.error("Error fetching auction details:", err);
+        }
+    };
+
+    // Close the popup
+    const closePopup = () => {
+        setSelectedAuction(null);
+    };
 
     return (
         <div className="auctions-page">
@@ -143,20 +68,60 @@ const AuctionsPage = () => {
             {showForm && <AuctionCreateForm />}
 
             <h2>Current Auctions</h2>
+            {loading && <p>Loading auctions...</p>}
+            {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+
             <div className="auction-list">
-                {auctions.map((auction) => (
-                    <div key={auction.id_aukcije} className="auction-item">
-                        <h3>{auction.naziv}</h3>
-                        <p><strong>Starting Price:</strong> ${auction.pocetna_cijena}</p>
-                        {auction.buy_now_cijena && (
-                            <p><strong>Buy Now Price:</strong> ${auction.buy_now_cijena}</p>
-                        )}
-                        <p><strong>Info:</strong> {auction.informacije}</p>
-                        <p><strong>Date:</strong> {new Date(auction.datum).toLocaleDateString()}</p>
-                        <img src={auction.slika} alt={auction.naziv} className="auction-image" />
-                    </div>
-                ))}
+                {auctions.map((auction) => {
+                    // Fix the URL if it contains 'image/upload/' followed by an invalid URL
+                    let fixedSlika = auction.slika;
+                    if (fixedSlika && fixedSlika.startsWith("image/upload/")) {
+                        fixedSlika = fixedSlika.replace("image/upload/", "");
+                    }
+
+                    return (
+                        <div
+                            key={auction.id_aukcije}
+                            className="auction-item"
+                            onClick={() => handleAuctionClick(auction.id_aukcije)} // Click handler
+                        >
+                            <h3>{auction.naziv}</h3>
+                            <p><strong>Starting Price:</strong> ${auction.pocetna_cijena}</p>
+                            {auction.buy_now_cijena && (
+                                <p><strong>Buy Now Price:</strong> ${auction.buy_now_cijena}</p>
+                            )}
+                            <p><strong>Info:</strong> {auction.informacije}</p>
+                            <p><strong>Date:</strong> {new Date(auction.datum).toLocaleDateString()}</p>
+                            <img src={fixedSlika} alt={auction.naziv} className="auction-image" />
+                        </div>
+                    );
+                })}
             </div>
+
+            {/* Popup for Selected Auction */}
+            {selectedAuction && (
+                <div className="auction-popup">
+                    <button className="close-popup" onClick={closePopup}>X</button>
+                    <div className="popup-content">
+                        <img
+                            src={selectedAuction.slika || ""} 
+                            alt={selectedAuction.naziv}
+                            className="popup-image"
+                        />
+                        <h3>{selectedAuction.naziv}</h3>
+                        <p><strong>Starting Price:</strong> ${selectedAuction.pocetna_cijena}</p>
+                        {selectedAuction.buy_now_cijena && (
+                            <p><strong>Buy Now Price:</strong> ${selectedAuction.buy_now_cijena}</p>
+                        )}
+                        <p><strong>Info:</strong> {selectedAuction.informacije}</p>
+                        <p><strong>Date:</strong> {new Date(selectedAuction.datum).toLocaleDateString()}</p>
+                        <p><strong>Organizer:</strong> {selectedAuction.kreirao}</p>
+                        {selectedAuction.najveca_ponuda && (
+                            <p><strong>Highest Bid:</strong> ${selectedAuction.najveca_ponuda}</p>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -221,9 +221,11 @@ def detalji_aukcije(request, id_aukcije):
         "aktivna": aukcija.aktivna,
         "kreirao": aukcija.kreirao.korisnicko_ime if aukcija.kreirao else None,
         "najveca_ponuda": najveca_ponuda,
+        "slika": aukcija.slika.url if aukcija.slika else None,  # Add the image URL
     }
     
     return Response(data, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 def bidanje(request, id_aukcije):
