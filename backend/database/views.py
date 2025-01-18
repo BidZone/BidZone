@@ -248,74 +248,81 @@ def detalji_aukcije(request, id_aukcije):
     return Response(data, status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-def bidanje(request, id_aukcije):
+class BidanjeView(generics.CreateAPIView):
     authentication_classes = [CustJWTAuthentication]
-    serializer = WithdrawalSerializer(data=request.data)
     permission_classes = [permissions.IsAuthenticated]
 
-    korisnik = request.user
-    iznos = request.data.get('iznos')
+    def post(self, request, id_aukcije, *args, **kwargs):
+        iznos = request.data.get('iznos')
+        if not iznos:
+            return Response({"error": "Iznos ponude je obavezan"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if not iznos:
-        return Response({"error": "Iznos ponude je obavezan"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        aukcija = Aukcija.objects.get(id_aukcije=id_aukcije, aktivna=True)
-    except Aukcija.DoesNotExist:
-        return Response({"error": "Aukcija nije aktivna ili ne postoji."}, status=status.HTTP_404_NOT_FOUND)
-    
-    najveca_ponuda = Ponuda.objects.filter(id_aukcije=aukcija).aggregate(Max('iznos'))['iznos__max']
-    if najveca_ponuda is None:
-        najveca_ponuda = aukcija.pocetna_cijena
+        korisnik = request.user
 
-    if float(iznos) <= float(najveca_ponuda):
-        return Response({"error": "Ponuda mora biti veća od trenutne najveće ponude ili početne cijene"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    existing_ponuda = Ponuda.objects.filter(id_korisnika=korisnik, id_aukcije=aukcija).order_by('vrijeme').first()
+        try:
+            aukcija = Aukcija.objects.get(id_aukcije=id_aukcije, aktivna=True)
+        except Aukcija.DoesNotExist:
+            return Response({"error": "Aukcija nije aktivna ili ne postoji."}, status=status.HTTP_404_NOT_FOUND)
 
-    nova_ponuda = Ponuda.objects.create(id_korisnika=korisnik, id_aukcije=aukcija, iznos=iznos, vrijeme=timezone.now())
+        # Dohvati najveću ponudu ili početnu cijenu
+        najveca_ponuda = Ponuda.objects.filter(id_aukcije=aukcija).aggregate(Max('iznos'))['iznos__max']
+        if najveca_ponuda is None:
+            najveca_ponuda = aukcija.pocetna_cijena
 
-    if existing_ponuda:
-        razlika = float(iznos) - float(existing_ponuda.iznos)
-        if razlika > 0:
-            korisnik.zamrznuti_balans += razlika
+        # Provjeri je li ponuda veća od trenutne najveće ponude
+        if float(iznos) <= float(najveca_ponuda):
+            return Response({"error": "Ponuda mora biti veća od trenutne najveće ponude ili početne cijene"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Kreiraj ili ažuriraj ponudu
+        existing_ponuda = Ponuda.objects.filter(id_korisnika=korisnik, id_aukcije=aukcija).order_by('vrijeme').first()
+
+        nova_ponuda = Ponuda.objects.create(id_korisnika=korisnik, id_aukcije=aukcija, iznos=iznos, vrijeme=timezone.now())
+
+        if existing_ponuda:
+            razlika = float(iznos) - float(existing_ponuda.iznos)
+            if razlika > 0:
+                korisnik.zamrznuti_balans += razlika
+                korisnik.save()
+        else:
+            korisnik.zamrznuti_balans += float(iznos)
             korisnik.save()
-    else:
-        korisnik.zamrznuti_balans += float(iznos)
-        korisnik.save()
-    
-    return Response({"message": "Ponuda uspješno postavljena."}, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
-def buy_now(request, id_aukcije):
+        return Response({"message": "Ponuda uspješno postavljena."}, status=status.HTTP_200_OK)
+
+
+class BuyNowView(generics.CreateAPIView):
     authentication_classes = [CustJWTAuthentication]
-    serializer = WithdrawalSerializer(data=request.data)
     permission_classes = [permissions.IsAuthenticated]
-    korisnik = request.user
 
-    try:
-        aukcija = Aukcija.objects.get(id_aukcije=id_aukcije, aktivna=True)
-    except Aukcija.DoesNotExist:
-        return Response({"error": "Aukcija nije aktivna ili ne postoji."}, status=status.HTTP_404_NOT_FOUND)
-    
-    if aukcija.buy_now_cijena is None:
-        return Response({"error": "Ova aukcija nema opciju 'Buy Now'."}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, id_aukcije, *args, **kwargs):
+        korisnik = request.user
 
-    if float(korisnik.balans - korisnik.zamrznuti_balans) < float(aukcija.buy_now_cijena):
-        return Response({"error": "Nemate dovoljno sredstava za 'Buy Now'."}, status=status.HTTP_400_BAD_REQUEST)
-    
-    korisnik.balans -= float(aukcija.buy_now_cijena)
-    korisnik.save()
+        try:
+            aukcija = Aukcija.objects.get(id_aukcije=id_aukcije, aktivna=True)
+        except Aukcija.DoesNotExist:
+            return Response({"error": "Aukcija nije aktivna ili ne postoji."}, status=status.HTTP_404_NOT_FOUND)
 
-    organizator = aukcija.kreirao
-    organizator.balans += float(aukcija.buy_now_cijena)
-    organizator.save()
+        if aukcija.buy_now_cijena is None:
+            return Response({"error": "Ova aukcija nema opciju 'Buy Now'."}, status=status.HTTP_400_BAD_REQUEST)
 
-    aukcija.aktivna = False
-    aukcija.save()
+        # Provjera balansa korisnika
+        raspolozivi_balans = float(korisnik.balans - korisnik.zamrznuti_balans)
+        if raspolozivi_balans < float(aukcija.buy_now_cijena):
+            return Response({"error": "Nemate dovoljno sredstava za 'Buy Now'."}, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response({"message": "Kupnja uspješno izvršena preko 'Buy Now."}, status=status.HTTP_200_OK)
+        # Ažuriraj balans korisnika i organizatora
+        korisnik.balans -= float(aukcija.buy_now_cijena)
+        korisnik.save()
+
+        organizator = aukcija.kreirao
+        organizator.balans += float(aukcija.buy_now_cijena)
+        organizator.save()
+
+        # Deaktiviraj aukciju
+        aukcija.aktivna = False
+        aukcija.save()
+
+        return Response({"message": "Kupnja uspješno izvršena preko 'Buy Now'."}, status=status.HTTP_200_OK)
 
 def send_verification_email(user, request):
     # Generiraj token i uid

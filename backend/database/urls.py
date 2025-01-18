@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AukcijaCreateView, RegisterView, LoginView, WithdrawMoneyView, DepositMoneyView, BalanceView
+from .views import AukcijaCreateView, RegisterView, LoginView, WithdrawMoneyView, DepositMoneyView, BalanceView, BidanjeView, BuyNowView
 from . import views
 
 urlpatterns = [
@@ -11,7 +11,7 @@ urlpatterns = [
     path('withdraw/', WithdrawMoneyView.as_view(), name='withdraw_money'),
     path('deposit/', DepositMoneyView.as_view(), name='deposit_money'),
     path('balance/', BalanceView.as_view(), name='get_balance'),
-    path('bidanje/<int:id_aukcije>/', views.bidanje, name='bidanje'),
     path('aukcija/<int:id_aukcije>/', views.detalji_aukcije, name='detalji_aukcije'),
-    path('buy_now/<int:id_aukcije>/', views.buy_now, name='buy_now'),
+    path('bidanje/<int:id_aukcije>/', BidanjeView.as_view(), name='bidanje'),
+    path('buy_now/<int:id_aukcije>/', BuyNowView.as_view(), name='buy_now'),
 ]
