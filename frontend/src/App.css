@@ -44,3 +44,20 @@ body.scroll-hidden {
 body.scroll-auto {
   overflow: auto;
 }
+
+/* Ensure the brand and toggler stay aligned */
+.navbar .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+/* Adjust spacing for small screens */
+.navbar-brand {
+  white-space: nowrap; /* Prevent wrapping of the brand name */
+}
+
+.navbar-toggler {
+  margin-left: auto; /* Push the toggler to the far right */
+}
