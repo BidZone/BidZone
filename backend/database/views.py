@@ -253,7 +253,7 @@ class BidanjeView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, id_aukcije, *args, **kwargs):
-        iznos = request.data.get('iznos')
+        iznos = request.data.get('amount')
         if not iznos:
             return Response({"error": "Iznos ponude je obavezan"}, status=status.HTTP_400_BAD_REQUEST)
 

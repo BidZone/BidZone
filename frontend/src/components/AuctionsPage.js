@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from "react";
 import AuctionCreateForm from "./AuctionCreateForm";
 import './AuctionsPage.css';
-import { useAuth } from "../contexts/AuthContext"; // Import AuthContext hook
+import { useAuth } from "../contexts/AuthContext";
 
 const AuctionsPage = () => {
-    const { isAuthenticated } = useAuth(); // Check authentication
-    const [auctions, setAuctions] = useState([]); // State for auctions
-    const [loading, setLoading] = useState(true); // Loading indicator state
-    const [error, setError] = useState(null); // Error state
+    const { isAuthenticated } = useAuth();
+    const [auctions, setAuctions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [showForm, setShowForm] = useState(false);
-    const [selectedAuction, setSelectedAuction] = useState(null); // State for the selected auction (popup)
+    const [selectedAuction, setSelectedAuction] = useState(null);
+    const [bidAmount, setBidAmount] = useState(""); // Stores the entered bid amount
+    const [feedback, setFeedback] = useState(""); // Feedback for bid/buy actions
 
     const handleToggleForm = () => {
         setShowForm(!showForm);
     };
 
-    // Fetch auction list
     useEffect(() => {
         const fetchAuctions = async () => {
             try {
@@ -25,7 +26,7 @@ const AuctionsPage = () => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                setAuctions(data); // Set fetched data
+                setAuctions(data);
             } catch (error) {
                 setError(error.message);
             } finally {
@@ -36,7 +37,6 @@ const AuctionsPage = () => {
         fetchAuctions();
     }, []);
 
-    // Handle auction click to fetch details for the popup
     const handleAuctionClick = async (id) => {
         try {
             const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/users/aukcija/${id}`);
@@ -44,15 +44,74 @@ const AuctionsPage = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            setSelectedAuction(data); // Set the fetched auction as the selected auction
+            setSelectedAuction(data);
         } catch (err) {
             console.error("Error fetching auction details:", err);
         }
     };
 
-    // Close the popup
     const closePopup = () => {
         setSelectedAuction(null);
+        setBidAmount("");
+        setFeedback("");
+    };
+
+    const handleBuyNow = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/users/buy_now/${selectedAuction.id_aukcije}/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                },
+            });
+    
+            if (!response.ok) {
+                throw new Error("Failed to complete the purchase.");
+            }
+    
+            const data = await response.json();
+            setFeedback(data.message || "Purchase successful!");
+    
+            // Refresh the page after a successful purchase
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000); // Add a delay for user feedback visibility
+        } catch (err) {
+            setFeedback(`Error: ${err.message}`);
+        }
+    };
+    
+
+    const handleBidSubmit = async () => {
+        const minBid = selectedAuction.najveca_ponuda || selectedAuction.pocetna_cijena;
+
+        if (parseFloat(bidAmount) <= parseFloat(minBid)) {
+            setFeedback(`Your bid must be higher than ${minBid}€.`);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/users/bidanje/${selectedAuction.id_aukcije}/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                },
+                body: JSON.stringify({ amount: parseFloat(bidAmount) }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to place the bid.");
+            }
+
+            const data = await response.json();
+            setFeedback(data.message || "Bid placed successfully!");
+            setSelectedAuction((prev) => ({ ...prev, najveca_ponuda: parseFloat(bidAmount) }));
+            setBidAmount("");
+        } catch (err) {
+            setFeedback(`Error: ${err.message}`);
+        }
     };
 
     return (
@@ -70,12 +129,11 @@ const AuctionsPage = () => {
             <h2>Current Auctions</h2>
             {loading && <p>Loading auctions...</p>}
             {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-
             <div className="auction-list">
                 {auctions.map((auction) => {
-                    // Fix the URL if it contains 'image/upload/' followed by an invalid URL
+                    // Remove "image/upload/" from the URL if it exists
                     let fixedSlika = auction.slika;
-                    if (fixedSlika && fixedSlika.startsWith("image/upload/")) {
+                    if (fixedSlika && fixedSlika.includes("image/upload/")) {
                         fixedSlika = fixedSlika.replace("image/upload/", "");
                     }
 
@@ -83,7 +141,7 @@ const AuctionsPage = () => {
                         <div
                             key={auction.id_aukcije}
                             className="auction-item"
-                            onClick={() => handleAuctionClick(auction.id_aukcije)} // Click handler
+                            onClick={() => handleAuctionClick(auction.id_aukcije)}
                         >
                             <h3>{auction.naziv}</h3>
                             <p><strong>Starting Price:</strong> ${auction.pocetna_cijena}</p>
@@ -92,33 +150,40 @@ const AuctionsPage = () => {
                             )}
                             <p><strong>Info:</strong> {auction.informacije}</p>
                             <p><strong>Date:</strong> {new Date(auction.datum).toLocaleDateString()}</p>
-                            <img src={fixedSlika} alt={auction.naziv} className="auction-image" />
+                            <img src={fixedSlika || "https://via.placeholder.com/150"} alt={auction.naziv} className="auction-image" />
                         </div>
                     );
                 })}
             </div>
 
-            {/* Popup for Selected Auction */}
+
+
             {selectedAuction && (
                 <div className="auction-popup">
                     <button className="close-popup" onClick={closePopup}>X</button>
                     <div className="popup-content">
-                        <img
-                            src={selectedAuction.slika || ""} 
-                            alt={selectedAuction.naziv}
-                            className="popup-image"
-                        />
+                        <img src={selectedAuction.slika || ""} alt={selectedAuction.naziv} className="popup-image" />
                         <h3>{selectedAuction.naziv}</h3>
-                        <p><strong>Starting Price:</strong> ${selectedAuction.pocetna_cijena}</p>
+                        <p><strong>{selectedAuction.najveca_ponuda ? "Highest Bid" : "Starting Price"}:</strong> ${selectedAuction.najveca_ponuda || selectedAuction.pocetna_cijena}</p>
                         {selectedAuction.buy_now_cijena && (
-                            <p><strong>Buy Now Price:</strong> ${selectedAuction.buy_now_cijena}</p>
+                            <button className="btn btn-primary" onClick={handleBuyNow}>
+                                Buy Now: ${selectedAuction.buy_now_cijena}
+                            </button>
                         )}
-                        <p><strong>Info:</strong> {selectedAuction.informacije}</p>
-                        <p><strong>Date:</strong> {new Date(selectedAuction.datum).toLocaleDateString()}</p>
-                        <p><strong>Organizer:</strong> {selectedAuction.kreirao}</p>
-                        {selectedAuction.najveca_ponuda && (
-                            <p><strong>Highest Bid:</strong> ${selectedAuction.najveca_ponuda}</p>
-                        )}
+                        <div className="bid-section">
+                            <input
+                                type="number"
+                                id="bidAmount"
+                                className="form-control"
+                                placeholder="Enter bid"
+                                value={bidAmount}
+                                onChange={(e) => setBidAmount(e.target.value)}
+                            />
+                            <button className="btn btn-success mt-2" onClick={handleBidSubmit}>
+                                Place Bid
+                            </button>
+                        </div>
+                        {feedback && <p className="feedback mt-3">{feedback}</p>}
                     </div>
                 </div>
             )}

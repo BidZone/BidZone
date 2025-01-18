@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from .models import Aukcija, Korisnik
 from cloudinary.uploader import upload
 from cloudinary.utils import cloudinary_url
-from datetime import datetime
+from django.utils.timezone import now  # Import timezone-aware 'now'
 
 class KorisnikSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -69,7 +69,7 @@ class AukcijaSerializer(serializers.ModelSerializer):
             aukcija.slika = cloudinary_response.get('url')
         
         # Provjera da li je aukcija aktivna
-        if datetime.now() >= aukcija.datum:
+        if now() >= aukcija.datum:
             aukcija.aktivna = True
         else:
             aukcija.aktivna = False
