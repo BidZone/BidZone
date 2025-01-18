@@ -3,6 +3,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from .models import Aukcija, Korisnik
 from cloudinary.uploader import upload
 from cloudinary.utils import cloudinary_url
+from datetime import datetime
 
 class KorisnikSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -56,13 +57,25 @@ class AukcijaSerializer(serializers.ModelSerializer):
         fields = ['id_aukcije', 'aktivna', 'naziv', 'pocetna_cijena', 'buy_now_cijena', 'trajanje', 'informacije', 'datum', 'kreirao', 'slika']
 
     def create(self, validated_data):
+        # Izvlačenje slike, ako je dostavljena
         slika = validated_data.pop('slika', None)
+        
+        # Kreiranje instance Aukcija
         aukcija = Aukcija.objects.create(**validated_data)
-
+        
+        # Postavljanje slike uz korištenje Cloudinary (ako postoji)
         if slika:
             cloudinary_response = upload(slika)
             aukcija.slika = cloudinary_response.get('url')
-            aukcija.save()
+        
+        # Provjera da li je aukcija aktivna
+        if datetime.now() >= aukcija.datum:
+            aukcija.aktivna = True
+        else:
+            aukcija.aktivna = False
+        
+        # Spremanje izmjena
+        aukcija.save()
 
         return aukcija
     
@@ -83,10 +96,11 @@ class WithdrawalSerializer(serializers.Serializer):
         return value
 
     def validate(self, attrs):
-        korisnik = attrs.get('korisnik')
+        korisnik = self.context['request'].user  # Dohvati korisnika iz konteksta
         amount = attrs.get('amount')
 
         if korisnik.balans < amount:
             raise serializers.ValidationError("Nemate dovoljno sredstava na računu.")
         
+        attrs['korisnik'] = korisnik  # Dodaj korisnika nazad u attrs za daljnju upotrebu
         return attrs

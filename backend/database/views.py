@@ -133,45 +133,60 @@ def get_auctions(request):
     serializer = AukcijaSerializer(auctions, many=True)
     return Response(serializer.data)
 
-@api_view(['POST'])
-def deposit_money(request):
+class DepositMoneyView(generics.CreateAPIView):
     authentication_classes = [CustJWTAuthentication]
-    serializer = PaymentSerializer(data=request.data)
+    serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    if serializer.is_valid():
-        amount = serializer.validated_data['amount']
-        korisnik = request.user
-        
-        korisnik.balans += amount
-        korisnik.save()
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
 
-        return Response({
-            "message": "Uplata je uspješno izvršena.",
-            "new_balance": korisnik.balans
-        }, status=status.HTTP_200_OK)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            amount = serializer.validated_data['amount']
+            korisnik = request.user
 
-@api_view(['POST'])
-def withdraw_money(request):
+            # Dodavanje novca korisnikovom balansu
+            korisnik.balans += amount
+            korisnik.save()
+
+            return Response({
+                "message": "Uplata je uspješno izvršena.",
+                "new_balance": korisnik.balans
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class WithdrawMoneyView(generics.CreateAPIView):
     authentication_classes = [CustJWTAuthentication]
-    serializer = WithdrawalSerializer(data=request.data)
+    serializer_class = WithdrawalSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    if serializer.is_valid():
-        amount = serializer.validated_data['amount']
-        korisnik = request.user
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})  # Proslijedi kontekst
 
-        korisnik.balans -= amount
-        korisnik.save()
+        if serializer.is_valid():
+            amount = serializer.validated_data['amount']
+            korisnik = serializer.validated_data['korisnik']  # Dohvati korisnika iz validacije
 
-        return Response({
-            "message": "Isplata je uspješno izvršena.",
-            "new_balance": korisnik.balans
-        }, status=status.HTTP_200_OK)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # Provjera da li korisnik ima dovoljno sredstava
+            if korisnik.balans < amount:
+                return Response({
+                    "message": "Nedovoljno sredstava na računu."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Oduzimanje novca s korisnikovog balansa
+            korisnik.balans -= amount
+            korisnik.save()
+
+            return Response({
+                "message": "Isplata je uspješno izvršena.",
+                "new_balance": korisnik.balans
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 scheduler = BackgroundScheduler()
 
