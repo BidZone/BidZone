@@ -9,6 +9,9 @@ const Navbar = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState(""); // "withdraw" or "deposit"
   const [amount, setAmount] = useState(""); // Stores the entered amount
+  const [iban, setIban] = useState(""); // Stores the IBAN (withdraw)
+  const [cardNumber, setCardNumber] = useState(""); // Stores the card number (deposit)
+  const [cardError, setCardError] = useState(""); // Error message for invalid card number
   const [message, setMessage] = useState(""); // Message for feedback
   const [balance, setBalance] = useState(null);
 
@@ -21,14 +24,14 @@ const Navbar = () => {
           const response = await fetch(`${API_BASE_URL}/api/users/balance/`, {
             method: "GET",
             headers: {
-              "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
               "Content-Type": "application/json",
             },
           });
 
           if (response.ok) {
             const data = await response.json();
-            setBalance(data.balance); // Postavi balans u stanje
+            setBalance(data.balance);
           } else {
             console.error("Failed to fetch balance.");
           }
@@ -54,12 +57,33 @@ const Navbar = () => {
     setShowPopup(false);
     setPopupType("");
     setAmount(""); // Clear the amount input
+    setIban(""); // Clear the IBAN field
+    setCardNumber(""); // Clear the card number field
+    setCardError(""); // Clear card validation errors
     setMessage(""); // Clear the feedback message
+  };
+
+  const handleCardNumberChange = (e) => {
+    const input = e.target.value;
+    const sanitizedInput = input.replace(/\s+/g, ""); // Remove all whitespaces
+    setCardNumber(input); // Preserve the user's formatting
+
+    // Validate card number: must be 16 digits
+    if (sanitizedInput.length === 16 && /^\d{16}$/.test(sanitizedInput)) {
+      setCardError("");
+    } else {
+      setCardError("Invalid card number!");
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(""); // Clear any previous message
+
+    if (popupType === "deposit" && cardError) {
+      setMessage("Please correct the card number before proceeding.");
+      return;
+    }
 
     const endpoint = popupType === "withdraw" ? "/api/users/withdraw/" : "/api/users/deposit/";
     const url = `${API_BASE_URL}${endpoint}`;
@@ -68,8 +92,8 @@ const Navbar = () => {
       const response = await fetch(url, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", 
-          "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({ amount: parseFloat(amount) }),
       });
@@ -81,6 +105,13 @@ const Navbar = () => {
       const data = await response.json();
       setMessage(`Success: ${data.message || "Operation completed."}`);
       setAmount(""); // Clear the input after successful submission
+
+      // Update balance immediately on successful response
+      if (popupType === "withdraw") {
+        setBalance((prevBalance) => prevBalance - parseFloat(amount));
+      } else if (popupType === "deposit") {
+        setBalance((prevBalance) => prevBalance + parseFloat(amount));
+      }
     } catch (error) {
       setMessage(`Error: ${error.message}`);
     }
@@ -205,6 +236,33 @@ const Navbar = () => {
                   required
                 />
               </div>
+              {popupType === "withdraw" && (
+                <div className="form-group">
+                  <label htmlFor="iban">Enter IBAN:</label>
+                  <input
+                    type="text"
+                    id="iban"
+                    className="form-control"
+                    placeholder="Enter IBAN"
+                    value={iban}
+                    onChange={(e) => setIban(e.target.value)}
+                  />
+                </div>
+              )}
+              {popupType === "deposit" && (
+                <div className="form-group">
+                  <label htmlFor="card-number">Enter Card Number:</label>
+                  <input
+                    type="text"
+                    id="card-number"
+                    className="form-control"
+                    placeholder="Enter Card Number"
+                    value={cardNumber}
+                    onChange={handleCardNumberChange}
+                  />
+                  {cardError && <p className="text-danger mt-1">{cardError}</p>}
+                </div>
+              )}
               <button type="submit" className="btn btn-primary mt-3">
                 Confirm
               </button>
