@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import "./Navbar.css";
 
@@ -10,8 +10,36 @@ const Navbar = () => {
   const [popupType, setPopupType] = useState(""); // "withdraw" or "deposit"
   const [amount, setAmount] = useState(""); // Stores the entered amount
   const [message, setMessage] = useState(""); // Message for feedback
+  const [balance, setBalance] = useState(null);
 
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (isAuthenticated) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/users/balance/`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setBalance(data.balance); // Postavi balans u stanje
+          } else {
+            console.error("Failed to fetch balance.");
+          }
+        } catch (error) {
+          console.error("Error fetching balance:", error);
+        }
+      }
+    };
+
+    fetchBalance();
+  }, [isAuthenticated, API_BASE_URL]);
 
   const handleBalanceClick = () => {
     setShowBalanceDropdown(!showBalanceDropdown);
@@ -86,7 +114,7 @@ const Navbar = () => {
                       onClick={handleBalanceClick}
                       style={{ cursor: "pointer" }}
                     >
-                      Balance
+                      Balance: {balance !== null ? `${balance} €` : "Loading..."}
                     </button>
                     {showBalanceDropdown && (
                       <ul className="dropdown-menu show">

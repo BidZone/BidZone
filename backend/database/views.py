@@ -186,7 +186,13 @@ class WithdrawMoneyView(generics.CreateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class BalanceView(generics.RetrieveAPIView):
+    authentication_classes = [CustJWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get(self, request, *args, **kwargs):
+        korisnik = request.user
+        return Response({"balance": korisnik.balans}, status=status.HTTP_200_OK)
 
 scheduler = BackgroundScheduler()
 
