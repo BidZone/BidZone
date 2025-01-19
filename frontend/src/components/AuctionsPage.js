@@ -159,31 +159,35 @@ const AuctionsPage = () => {
 
 
             {selectedAuction && (
-                <div className="auction-popup">
-                    <button className="close-popup" onClick={closePopup}>X</button>
-                    <div className="popup-content">
-                        <img src={selectedAuction.slika || ""} alt={selectedAuction.naziv} className="popup-image" />
-                        <h3>{selectedAuction.naziv}</h3>
-                        <p><strong>{selectedAuction.najveca_ponuda ? "Highest Bid" : "Starting Price"}:</strong> ${selectedAuction.najveca_ponuda || selectedAuction.pocetna_cijena}</p>
-                        {selectedAuction.buy_now_cijena && (
-                            <button className="btn btn-primary" onClick={handleBuyNow}>
-                                Buy Now: ${selectedAuction.buy_now_cijena}
-                            </button>
-                        )}
-                        <div className="bid-section">
-                            <input
-                                type="number"
-                                id="bidAmount"
-                                className="form-control"
-                                placeholder="Enter bid"
-                                value={bidAmount}
-                                onChange={(e) => setBidAmount(e.target.value)}
-                            />
-                            <button className="btn btn-success mt-2" onClick={handleBidSubmit}>
-                                Place Bid
-                            </button>
+                <div className="popup-overlay">
+                    <div className="auction-popup">
+                        <div className="close-button" onClick={closePopup}>
+                            <i className="fas fa-times"></i>
                         </div>
-                        {feedback && <p className="feedback mt-3">{feedback}</p>}
+                        <div className="popup-content">
+                            <img src={selectedAuction.slika || ""} alt={selectedAuction.naziv} className="popup-image" />
+                            <h3>{selectedAuction.naziv}</h3>
+                            <p><strong>{selectedAuction.najveca_ponuda ? "Highest Bid" : "Starting Price"}:</strong> ${selectedAuction.najveca_ponuda || selectedAuction.pocetna_cijena}</p>
+                            {selectedAuction.buy_now_cijena && (
+                                <button className="btn btn-primary" onClick={handleBuyNow}>
+                                    Buy Now: ${selectedAuction.buy_now_cijena}
+                                </button>
+                            )}
+                            <div className="bid-section">
+                                <input
+                                    type="number"
+                                    id="bidAmount"
+                                    className="form-control"
+                                    placeholder="Enter bid"
+                                    value={bidAmount}
+                                    onChange={(e) => setBidAmount(e.target.value)}
+                                />
+                                <button className="btn btn-success mt-2" onClick={handleBidSubmit}>
+                                    Place Bid
+                                </button>
+                            </div>
+                            {feedback && <p className="feedback mt-3">{feedback}</p>}
+                        </div>
                     </div>
                 </div>
             )}

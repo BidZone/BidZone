@@ -215,13 +215,13 @@ const Navbar = () => {
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup-content">
-            <button
+            <div
               className="close-button"
               onClick={handlePopupClose}
               aria-label="Close"
             >
-              &times;
-            </button>
+              <i className="fas fa-times"></i> {/* FontAwesome X icon */}
+            </div>
             <h3>{popupType === "withdraw" ? "Withdraw Funds" : "Deposit Funds"}</h3>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
