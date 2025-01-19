@@ -21,16 +21,28 @@
 }
 
 .close-button {
-  position: fixed;
-  top: 10px;
-  right: 10px;
+  position: fixed;  /* Fixed to the viewport */
+  top: 0;            /* Position at the very top of the page */
+  right: 0;          /* Position at the very right of the page */
+  width: 50px;       /* Set the width of the button */
+  height: 50px;      /* Set the height of the button */
   background: none;
-  border: none;
-  font-size: 1.5rem;
+  border: 2px solid #333; /* Set a border around the button */
+  border-radius: 50%;  /* Optional: Make the button circular */
+  font-size: 1.5rem;   /* Set font size */
   cursor: pointer;
   z-index: 100;
-  color: #333;
+  color: #333;        /* Set color of the icon */
+  display: flex;      /* Use flexbox to center the icon */
+  align-items: center; /* Align vertically */
+  justify-content: center; /* Align horizontally */
 }
+
+.close-button:hover {
+  color: #ff0000;      /* Optional: Change color on hover */
+  border-color: #ff0000; /* Optional: Change border color on hover */
+}
+
 
 .dropdown-menu {
   position: absolute;
