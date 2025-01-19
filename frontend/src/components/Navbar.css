@@ -28,6 +28,8 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+  z-index: 100;
+  color: #333;
 }
 
 .dropdown-menu {
@@ -52,5 +54,4 @@
 .dropdown-item:hover {
   background-color: #f8f9fa;
 }
-
 
