@@ -24,8 +24,8 @@
   position: fixed;  /* Fixed to the viewport */
   top: 0;            /* Position at the very top of the page */
   right: 0;          /* Position at the very right of the page */
-  width: 50px;       /* Set the width of the button */
-  height: 50px;      /* Set the height of the button */
+  width: 300px;       /* Set the width of the button */
+  height: 300px;      /* Set the height of the button */
   background: none;
   border: 2px solid #333; /* Set a border around the button */
   border-radius: 50%;  /* Optional: Make the button circular */
