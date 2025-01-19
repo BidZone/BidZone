@@ -8,6 +8,8 @@ import AuctionsPage from "./components/AuctionsPage";
 import EmailVerified from "./components/EmailVerified";
 import MainPage from "./components/MainPage"; // Import MainPage component
 import { AuthProvider } from "./contexts/AuthContext"; // Import AuthProvider
+import ProfileOverview from './components/ProfileOverview';
+
 
 const App = () => {
   const location = useLocation();
@@ -37,6 +39,8 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/auctions" element={<AuctionsPage />} />
         <Route path="/email-verified" element={<EmailVerified />} />
+        <Route path="/ProfileOverview" element={<ProfileOverview />} />
+
       </Routes>
     </div>
   );
