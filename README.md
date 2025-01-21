@@ -10,7 +10,7 @@ The demo application is deployed at [https://bidzone.onrender.com/](https://bidz
 - [Installation](#installation)
 - [Usage](#usage)
 - [API Documentation](#api-documentation)
-- [Contributors](#contributors)
+- [Team Members](#team-members)
 - [License](#license)
 
 ## Features
@@ -67,10 +67,6 @@ CLOUD_NAME=your_cloudinary_cloud_name
 API_KEY=cloudinary_api_key
 API_SECRET=cloudinay_api_secret
 FRONTEND_WEBSITE=http://localhost:3000 # for hosting on local machine
-```
-- Make migrations:
-```bash
-python manage.py makemigrations
 ```
 - Apply migrations:
 ```bash
